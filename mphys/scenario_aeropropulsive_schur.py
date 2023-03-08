@@ -3,7 +3,7 @@ from .scenario import Scenario
 from .coupling_group import CouplingGroup
 
 
-class ScenarioAeropropulsiveSchur(Scenario):
+class ScenarioAeropropulsive(Scenario):
     def initialize(self):
         """
         A class to perform an aeropropulsive case.
@@ -12,10 +12,10 @@ class ScenarioAeropropulsiveSchur(Scenario):
         """
         super().initialize()
 
-        self.options.declare("aero_builder", recordable=False, desc="The Mphys builder for the aerodynamic solver")
-        self.options.declare("prop_builder", recordable=False, desc="The Mphys builder for the propulsion model")
+        self.options.declare("aero_builder", recordable=False, desc="The MPhys builder for the aerodynamic solver")
+        self.options.declare("prop_builder", recordable=False, desc="The MPhys builder for the propulsion model")
         self.options.declare(
-            "balance_builder", recordable=False, desc="The Mphys builder for the balance group", default=None
+            "balance_builder", recordable=False, desc="The MPhys builder for the balance group", default=None
         )
         self.options.declare(
             "in_MultipointParallel",
@@ -23,10 +23,10 @@ class ScenarioAeropropulsiveSchur(Scenario):
             desc="Set to `True` if adding this scenario inside a MultipointParallel Group.",
         )
         self.options.declare(
-            "geometry_builder", default=None, recordable=False, desc="The optional Mphys builder for the geometry"
+            "geometry_builder", default=None, recordable=False, desc="The optional MPhys builder for the geometry"
         )
 
-    def setup(self):
+    def _mphys_scenario_setup(self):
         aero_builder = self.options["aero_builder"]
         prop_builder = self.options["prop_builder"]
         balance_builder = self.options["balance_builder"]

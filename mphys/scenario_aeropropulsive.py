@@ -40,7 +40,10 @@ class ScenarioAeropropulsive(Scenario):
         self._mphys_add_pre_coupling_subsystem_from_builder("prop", prop_builder, self.name)
 
         coupling_group = CouplingAeropropulsive(
-            aero_builder=aero_builder, prop_builder=prop_builder, balance_builder=balance_builder, scenario_name=self.name
+            aero_builder=aero_builder,
+            prop_builder=prop_builder,
+            balance_builder=balance_builder,
+            scenario_name=self.name,
         )
         self.mphys_add_subsystem("coupling", coupling_group)
 
@@ -54,7 +57,6 @@ class ScenarioAeropropulsive(Scenario):
             geometry_builder.initialize(self.comm)
 
     def _mphys_add_mesh_and_geometry_subsystems(self, aero_builder, prop_builder, geometry_builder):
-
         if geometry_builder is None:
             self.mphys_add_subsystem("aero_mesh", aero_builder.get_mesh_coordinate_subsystem(self.name))
             # self.mphys_add_subsystem("prop_mesh", prop_builder.get_mesh_coordinate_subsystem(self.name))
