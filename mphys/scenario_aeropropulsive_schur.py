@@ -3,7 +3,7 @@ from .scenario import Scenario
 from .coupling_group import CouplingGroup
 
 
-class ScenarioAeropropulsive(Scenario):
+class ScenarioAeropropulsiveSchur(Scenario):
     def initialize(self):
         """
         A class to perform an aeropropulsive case.
