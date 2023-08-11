@@ -134,7 +134,6 @@ class CouplingAeroSchur(CouplingGroup):
             max_sub_solves=60,
             err_on_non_converge=True,
             mode_nonlinear="rev",
-            bounds={"lower": [0.0], "upper": [10.0]},
             groupNames=["coupling_group", "balance_group"],
         )
         self.linear_solver = om.LinearSchur(
