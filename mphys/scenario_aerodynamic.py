@@ -1,5 +1,4 @@
 from .scenario import Scenario
-from .coupling_schur import CouplingSchur
 from .coupling_group import CouplingGroup
 import openmdao.api as om
 
