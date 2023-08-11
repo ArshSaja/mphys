@@ -143,6 +143,8 @@ class CouplingAeroSchur(CouplingGroup):
             mode_linear="rev",
             groupNames=["coupling_group", "balance_group"],
         )
+        # self.set_solver_print(level=2)
+        self.set_solver_print(level=2, depth=4)
 
 
 class CouplingAeroTopSchur(CouplingGroup):
