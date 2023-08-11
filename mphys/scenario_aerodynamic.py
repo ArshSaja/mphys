@@ -186,6 +186,8 @@ class CouplingAeroTopSchur(CouplingGroup):
         # self.mphys_add_subsystem("aero", aero)
         # self.mphys_add_subsystem("load_xfer", load_xfer)
         # self.mphys_add_subsystem("struct", struct)
+        self.nonlinear_solver = om.NonlinearRunOnce()
+        self.linear_solver = om.LinearRunOnce()
 
         # self.nonlinear_solver = om.NonlinearSchurSolver(
         #     atol=1e-2,
