@@ -74,7 +74,7 @@ class ScenarioAerodynamic(Scenario):
             # coupling_schur.mphys_add_subsystem("aero_post", aero_builder.get_post_coupling_subsystem(self.name))
             aero_post = aero_builder.get_post_coupling_subsystem(self.name)
             self.mphys_add_subsystem(
-                "coupling_aero",
+                "coupling_schur",
                 CouplingAeroSchur(
                     # coupling_group=coupling_schur,
                     aero_pre=aero_pre,

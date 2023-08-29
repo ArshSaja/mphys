@@ -11,13 +11,13 @@ def set_coupling_algorithms_in_scenarios(multipoint_group, balance_added=False):
     for scenario, solvers in multipoint_group.mphys_coupling_solvers:
         if solvers[0] is not None and scenario.comm:
             if balance_added:
-                scenario.coupling_aerostruct.coupling_group.coupling.nonlinear_solver = solvers[0]
+                scenario.coupling_schur.coupling_group.coupling.nonlinear_solver = solvers[0]
             else:
                 scenario.coupling.nonlinear_solver = solvers[0]
 
         if solvers[1] is not None and scenario.comm:
             if balance_added:
-                scenario.coupling_aerostruct.coupling_group.coupling.linear_solver = solvers[1]
+                scenario.coupling_schur.coupling_group.coupling.linear_solver = solvers[1]
             else:
                 scenario.coupling.linear_solver = solvers[1]
             # scenario.coupling.linear_solver = solvers[1]

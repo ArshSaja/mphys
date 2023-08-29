@@ -101,7 +101,7 @@ class ScenarioAeroStructural(Scenario):
             ldxfer_post = ldxfer_builder.get_post_coupling_subsystem(self.name)
 
             self.mphys_add_subsystem(
-                "coupling_aerostruct",
+                "coupling_schur",
                 CouplingAeroStructSchur(
                     aero_pre=aero_pre,
                     struct_pre=struct_pre,
