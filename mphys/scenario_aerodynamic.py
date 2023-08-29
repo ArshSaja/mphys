@@ -19,12 +19,12 @@ class ScenarioAerodynamic(Scenario):
             types=bool,
             desc="Set to `True` if adding this scenario inside a MultipointParallel Group.",
         )
-        self.options.declare(
-            "add_SchurCoupling",
-            default=False,
-            types=bool,
-            desc="Set to `True` if adding this scenario inside a MultipointParallel Group.",
-        )
+        # self.options.declare(
+        #     "add_SchurCoupling",
+        #     default=False,
+        #     types=bool,
+        #     desc="Set to `True` if adding this scenario inside a MultipointParallel Group.",
+        # )
         self.options.declare(
             "geometry_builder", default=None, recordable=False, desc="The optional MPhys builder for the geometry"
         )
@@ -37,7 +37,7 @@ class ScenarioAerodynamic(Scenario):
         geometry_builder = self.options["geometry_builder"]
         balance_group = geometry_builder = self.options["balance_group"]
 
-        if not self.options["add_SchurCoupling"]:
+        if balance_group is None:
             if self.options["in_MultipointParallel"]:
                 aero_builder.initialize(self.comm)
 
@@ -92,39 +92,21 @@ class CouplingAeroSchur(CouplingGroup):
     """
 
     def initialize(self):
-        # self.options.declare("coupling_group", recordable=False)
-        self.options.declare("aero_pre", recordable=False)
-        self.options.declare("coupling", recordable=False)
-        self.options.declare("aero_post", recordable=True, default=None)
-        # self.options.declare("prop_builder", recordable=False)
-        # self.options.declare("balance_builder", recordable=False, default=None)
+        self.options.declare("aero_pre", recordable=False, default=None)
+        self.options.declare("coupling", recordable=False, default=None)
+        self.options.declare("aero_post", recordable=False, default=None)
         self.options.declare("balance_group", recordable=False, default=None)
 
     def setup(self):
-        # coupling_group = self.options["coupling_group"]
         aero_pre = self.options["aero_pre"]
         coupling = self.options["coupling"]
         aero_post = self.options["aero_post"]
-        # aero_builder = self.options["aero_builder"]
-        # struct_builder = self.options["struct_builder"]
-        # ldxfer_builder = self.options["ldxfer_builder"]
-        # prop_builder = self.options["prop_builder"]
-        # balance_builder = self.options["balance_builder"]
         balance_group = self.options["balance_group"]
-        # scenario_name = self.options["scenario_name"]
 
         coupling_group = CouplingAeroTopSchur(aero_pre=aero_pre, coupling=coupling, aero_post=aero_post)
-        # disp_xfer, load_xfer = ldxfer_builder.get_coupling_group_subsystem(scenario_name)
-        # aero = aero_builder.get_coupling_group_subsystem(scenario_name)
-        # struct = struct_builder.get_coupling_group_subsystem(scenario_name)
-
-        # geo_disp = GeoDisp(number_of_nodes=aero_builder.get_number_of_nodes())
 
         self.mphys_add_subsystem("coupling_group", coupling_group)
         self.mphys_add_subsystem("balance_group", balance_group)
-        # self.mphys_add_subsystem("aero", aero)
-        # self.mphys_add_subsystem("load_xfer", load_xfer)
-        # self.mphys_add_subsystem("struct", struct)
 
         self.nonlinear_solver = om.NonlinearSchurSolver(
             atol=1e-2,
@@ -137,12 +119,9 @@ class CouplingAeroSchur(CouplingGroup):
             groupNames=["coupling_group", "balance_group"],
         )
         self.linear_solver = om.LinearSchur(
-            # atol=1e-20,
-            # rtol=1e-10,
             mode_linear="rev",
             groupNames=["coupling_group", "balance_group"],
         )
-        # self.set_solver_print(level=2)
         self.set_solver_print(level=2, depth=4)
 
 
@@ -152,56 +131,18 @@ class CouplingAeroTopSchur(CouplingGroup):
     """
 
     def initialize(self):
-        # self.options.declare("coupling_group", recordable=False)
-        self.options.declare("aero_pre", recordable=False)
-        self.options.declare("coupling", recordable=False)
-        self.options.declare("aero_post", recordable=True, default=None)
-        # self.options.declare("prop_builder", recordable=False)
-        # self.options.declare("balance_builder", recordable=False, default=None)
-        # self.options.declare("balance_group", recordable=False, default=None)
+        self.options.declare("aero_pre", recordable=False, default=None)
+        self.options.declare("coupling", recordable=False, default=None)
+        self.options.declare("aero_post", recordable=False, default=None)
 
     def setup(self):
-        # coupling_group = self.options["coupling_group"]
         aero_pre = self.options["aero_pre"]
         coupling = self.options["coupling"]
         aero_post = self.options["aero_post"]
-        # aero_builder = self.options["aero_builder"]
-        # struct_builder = self.options["struct_builder"]
-        # ldxfer_builder = self.options["ldxfer_builder"]
-        # prop_builder = self.options["prop_builder"]
-        # balance_builder = self.options["balance_builder"]
-        # balance_group = self.options["balance_group"]
-        # scenario_name = self.options["scenario_name"]
-
-        # disp_xfer, load_xfer = ldxfer_builder.get_coupling_group_subsystem(scenario_name)
-        # aero = aero_builder.get_coupling_group_subsystem(scenario_name)
-        # struct = struct_builder.get_coupling_group_subsystem(scenario_name)
-
-        # geo_disp = GeoDisp(number_of_nodes=aero_builder.get_number_of_nodes())
 
         self.mphys_add_subsystem("aero_pre", aero_pre)
         self.mphys_add_subsystem("coupling", coupling)
         self.mphys_add_subsystem("aero_post", aero_post)
-        # self.mphys_add_subsystem("aero", aero)
-        # self.mphys_add_subsystem("load_xfer", load_xfer)
-        # self.mphys_add_subsystem("struct", struct)
+
         self.nonlinear_solver = om.NonlinearRunOnce()
         self.linear_solver = om.LinearRunOnce()
-
-        # self.nonlinear_solver = om.NonlinearSchurSolver(
-        #     atol=1e-2,
-        #     rtol=1e-20,
-        #     solve_subsystems=True,
-        #     maxiter=10,
-        #     max_sub_solves=60,
-        #     err_on_non_converge=True,
-        #     mode_nonlinear="rev",
-        #     bounds={"lower": [0.0], "upper": [10.0]},
-        #     groupNames=["coupling_group", "balance_group"],
-        # )
-        # self.linear_solver = om.LinearSchur(
-        #     # atol=1e-20,
-        #     # rtol=1e-10,
-        #     mode_linear="rev",
-        #     groupNames=["coupling_group", "balance_group"],
-        # )

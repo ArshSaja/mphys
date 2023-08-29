@@ -1,7 +1,7 @@
 import openmdao.api as om
 
 
-def set_coupling_algorithms_in_scenarios(multipoint_group):
+def set_coupling_algorithms_in_scenarios(multipoint_group, balance_added=False):
     """
     Set the stored linear and nonlinear solver into the coupling group if the
     scenario exists on this proc.
@@ -10,10 +10,17 @@ def set_coupling_algorithms_in_scenarios(multipoint_group):
     """
     for scenario, solvers in multipoint_group.mphys_coupling_solvers:
         if solvers[0] is not None and scenario.comm:
-            scenario.coupling.nonlinear_solver = solvers[0]
+            if balance_added:
+                scenario.coupling_aerostruct.coupling_group.coupling.nonlinear_solver = solvers[0]
+            else:
+                scenario.coupling.nonlinear_solver = solvers[0]
 
         if solvers[1] is not None and scenario.comm:
-            scenario.coupling.linear_solver = solvers[1]
+            if balance_added:
+                scenario.coupling_aerostruct.coupling_group.coupling.linear_solver = solvers[1]
+            else:
+                scenario.coupling.linear_solver = solvers[1]
+            # scenario.coupling.linear_solver = solvers[1]
 
 
 class Multipoint(om.Group):
@@ -26,8 +33,7 @@ class Multipoint(om.Group):
         self.mphys_coupling_solvers = []
         super().__init__(**kwargs)
 
-    def mphys_add_scenario(self, name, scenario, coupling_nonlinear_solver=None,
-                           coupling_linear_solver=None):
+    def mphys_add_scenario(self, name, scenario, coupling_nonlinear_solver=None, coupling_linear_solver=None):
         """
         Add an MPhys scenario
 
@@ -44,6 +50,10 @@ class Multipoint(om.Group):
         """
         solver_tuple = (coupling_nonlinear_solver, coupling_linear_solver)
         self.mphys_coupling_solvers.append((scenario, solver_tuple))
+        self.balance_added = False
+        if scenario.options["balance_group"] is not None:
+            self.balance_added = True
+
         return self.add_subsystem(name, scenario)
 
     def mphys_connect_scenario_coordinate_source(self, source, scenarios, disciplines):
@@ -67,12 +77,12 @@ class Multipoint(om.Group):
 
         for scenario in scenarios_list:
             for discipline in disciplines_list:
-                src = f'{source}.x_{discipline}0'
-                target = f'{scenario}.x_{discipline}0'
+                src = f"{source}.x_{discipline}0"
+                target = f"{scenario}.x_{discipline}0"
                 self.connect(src, target)
 
     def configure(self):
-        return set_coupling_algorithms_in_scenarios(self)
+        return set_coupling_algorithms_in_scenarios(self, balance_added=self.balance_added)
 
 
 class MultipointParallel(om.ParallelGroup):
@@ -85,8 +95,7 @@ class MultipointParallel(om.ParallelGroup):
         self.mphys_coupling_solvers = []
         super().__init__(**kwargs)
 
-    def mphys_add_scenario(self, name, scenario, coupling_nonlinear_solver=None,
-                           coupling_linear_solver=None):
+    def mphys_add_scenario(self, name, scenario, coupling_nonlinear_solver=None, coupling_linear_solver=None):
         """
         Add an MPhys scenario
 
@@ -106,4 +115,4 @@ class MultipointParallel(om.ParallelGroup):
         return self.add_subsystem(name, scenario)
 
     def configure(self):
-        return set_coupling_algorithms_in_scenarios(self)
+        return set_coupling_algorithms_in_scenarios(self, balance_added=self.balance_added)
