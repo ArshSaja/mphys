@@ -35,7 +35,7 @@ class ScenarioAerodynamic(Scenario):
     def _mphys_scenario_setup(self):
         aero_builder = self.options["aero_builder"]
         geometry_builder = self.options["geometry_builder"]
-        balance_group = geometry_builder = self.options["balance_group"]
+        balance_group = self.options["balance_group"]
 
         if balance_group is None:
             if self.options["in_MultipointParallel"]:

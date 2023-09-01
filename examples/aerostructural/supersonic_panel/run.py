@@ -21,7 +21,7 @@ panel_width = 0.01
 # panel discretization
 N_el_struct = 20
 N_el_aero = 7
-parallel = False
+parallel = True
 
 
 # Mphys
