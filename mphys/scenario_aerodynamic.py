@@ -72,7 +72,7 @@ class ScenarioAerodynamic(Scenario):
             # coupling_schur.mphys_add_subsystem("coupling", aero_builder.get_coupling_group_subsystem(self.name))
             coupling = aero_builder.get_coupling_group_subsystem(self.name)
             # coupling_schur.mphys_add_subsystem("aero_post", aero_builder.get_post_coupling_subsystem(self.name))
-            aero_post = aero_builder.get_post_coupling_subsystem(self.name)
+            aero_post = aero_builder.get_post_coupling_subsystem_schur(self.name)
             self.mphys_add_subsystem(
                 "coupling_schur",
                 CouplingAeroSchur(
@@ -83,7 +83,7 @@ class ScenarioAerodynamic(Scenario):
                     balance_group=balance_group,
                 ),
             )
-            # self._mphys_add_post_coupling_subsystem_from_builder("aero", aero_builder, self.name)
+            self._mphys_add_post_coupling_subsystem_from_builder("aero", aero_builder, self.name)
 
 
 class CouplingAeroSchur(CouplingGroup):
