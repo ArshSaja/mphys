@@ -65,9 +65,12 @@ class Model(Multipoint):
         self.add_subsystem("aero_mesh", aero_builder.get_mesh_coordinate_subsystem())
         self.add_subsystem("geometry", geometry_builder.get_mesh_coordinate_subsystem(), promotes=["*"])
 
-        self.connect("struct_mesh.x_struct0", "x_struct0_in")
-        self.connect("aero_mesh.x_aero0", "x_aero0_in")
+        # self.connect("struct_mesh.x_struct0", "x_struct0_in")
+        # self.connect("aero_mesh.x_aero0", "x_aero0_in")
 
+        self.connect('struct_mesh.x_struct0', 'x_struct_in')
+        self.connect('aero_mesh.x_aero0', 'x_aero_in')
+ 
         # aerostructural analysis
         nonlinear_solver = om.NonlinearBlockGS(maxiter=100, iprint=2, use_aitken=True, aitken_initial_factor=0.5)
         linear_solver = om.LinearBlockGS(maxiter=40, iprint=2, use_aitken=True, aitken_initial_factor=0.5)
@@ -84,7 +87,7 @@ class Model(Multipoint):
             coupling_linear_solver=linear_solver,
         )
         if not parallel:
-            for var in ["modulus", "yield_stress", "density", "mach", "qdyn", "dv_struct", "x_struct0", "x_aero0"]:
+            for var in ["modulus", "yield_stress", "density", "mach", "qdyn", "dv_struct", "x_struct", "x_aero"]:
                 self.connect(var, "aerostructural." + var)
         else:
             for var in ["modulus", "yield_stress", "density", "mach", "qdyn", "dv_struct"]:

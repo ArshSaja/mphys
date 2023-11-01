@@ -13,13 +13,13 @@ def set_coupling_algorithms_in_scenarios(multipoint_group, balance_added=False):
             if balance_added:
                 scenario.coupling_schur.coupling_group.coupling.nonlinear_solver = solvers[0]
             else:
-                scenario.coupling.nonlinear_solver = solvers[0]
+                scenario.nonlinear_solver = solvers[0]
 
         if solvers[1] is not None and scenario.comm:
             if balance_added:
                 scenario.coupling_schur.coupling_group.coupling.linear_solver = solvers[1]
             else:
-                scenario.coupling.linear_solver = solvers[1]
+                scenario.linear_solver = solvers[1]
             # scenario.coupling.linear_solver = solvers[1]
 
 
@@ -80,6 +80,7 @@ class Multipoint(om.Group):
                 src = f"{source}.x_{discipline}0"
                 target = f"{scenario}.x_{discipline}0"
                 self.connect(src, target)
+       
 
     def configure(self):
         return set_coupling_algorithms_in_scenarios(self, balance_added=self.balance_added)

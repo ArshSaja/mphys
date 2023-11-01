@@ -39,17 +39,13 @@ jobs:
           echo "=============================================================";
           source $CONDA/etc/profile.d/conda.sh;
           echo $CONDA/bin >> $GITHUB_PATH;
-          conda create -n OpenMDAO python=3.8 numpy=1 scipy=1 -q -y;
+          conda create -n OpenMDAO -c conda-forge python=3.8 mamba=1.5.1 -q -y;
           conda activate OpenMDAO;
           pip install --upgrade pip
           echo "=============================================================";
           echo "Install PETSc";
           echo "=============================================================";
-          conda install -c conda-forge mpi4py petsc4py -q -y;
-          echo "============================================================="
-          echo "Pre-install jupyter dependencies"
-          echo "============================================================="
-          python -m pip install git+https://github.com/executablebooks/jupyter-book
+          mamba install -c conda-forge mpi4py=3.1.4 petsc4py -q -y;
           echo "=============================================================";
           echo "Install OpenMDAO";
           echo "=============================================================";
@@ -60,11 +56,12 @@ jobs:
           cd OpenMDAO;
           pip install .[all];
           cd ../mphys;
-          pip install -e .
+          pip install -e .[all];
           echo "=============================================================";
-          echo "Install TACS (complex)";
+          echo "Install optional dependencies";
           echo "=============================================================";
-          conda install -c conda-forge -c "smdogroup/label/complex" -c smdogroup tacs;
+          mamba install -c "smdogroup/label/complex" -c smdogroup -c conda-forge tacs funtofem -q -y;
+          pip install openaerostruct;
           echo "=============================================================";
           echo "List installed packages/versions";
           echo "=============================================================";
@@ -81,7 +78,7 @@ jobs:
           chmod +x get-input-files.sh
           ./get-input-files.sh
           cd ../integration_tests
-          testflo test_tacs_*
+          testflo test_tacs_* test_meld_* test_oas_*
           echo "=============================================================";
           echo "Making docs";
           echo "=============================================================";
