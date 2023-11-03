@@ -72,7 +72,6 @@ class ScenarioAeropropulsive(Scenario):
                     aero_post=aero_post,
                     prop_post=prop_post,
                     balance_group=balance_group,
-                    coupling_group_type=self.options["coupling_group_type"],
                 ),
             )
             self._mphys_add_post_coupling_subsystem_from_builder("aero", aero_builder, self.name)
