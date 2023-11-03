@@ -151,7 +151,6 @@ class CouplingAeroPropSchur(CouplingGroup):
         self.options.declare("aero_post", recordable=False, default=None)
         self.options.declare("prop_post", recordable=False, default=None)
         self.options.declare("balance_group", recordable=False, default=None)
-        self.options.declare("coupling_group_type", default=None)
 
     def setup(self):
         aero_pre = self.options["aero_pre"]
@@ -167,7 +166,6 @@ class CouplingAeroPropSchur(CouplingGroup):
             coupling=coupling,
             aero_post=aero_post,
             prop_post=prop_post,
-            coupling_group_type=self.options["coupling_group_type"],
         )
 
         self.mphys_add_subsystem("coupling_group", coupling_group)
@@ -201,7 +199,6 @@ class CouplingAeroPropTopSchur(CouplingGroup):
         self.options.declare("coupling", recordable=False, default=None)
         self.options.declare("aero_post", recordable=False, default=None)
         self.options.declare("prop_post", recordable=False, default=None)
-        self.options.declare("coupling_group_type", default=None)
 
     def setup(self):
         aero_pre = self.options["aero_pre"]
@@ -209,7 +206,6 @@ class CouplingAeroPropTopSchur(CouplingGroup):
         coupling = self.options["coupling"]
         aero_post = self.options["aero_post"]
         prop_post = self.options["prop_post"]
-        ldxfer_post = self.options["ldxfer_post"]
 
         if aero_pre is not None:
             self.mphys_add_subsystem("aero_pre", aero_pre)
