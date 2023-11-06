@@ -61,7 +61,7 @@ class ScenarioAeropropulsive(Scenario):
             )
 
             aero_post = aero_builder.get_post_coupling_subsystem_schur(self.name)
-            prop_post = prop_builder.get_post_coupling_subsystem(self.name)
+            prop_post = prop_builder.get_post_coupling_subsystem_schur(self.name)
 
             self.mphys_add_subsystem(
                 "coupling_schur",
