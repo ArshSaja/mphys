@@ -106,12 +106,12 @@ class ScenarioAeropropulsive(Scenario):
             if self.options["balance_group"] is None:
                 self.connect("coupling.aero.%s" % k, "coupling.prop.%s" % v)
             else:
-                self.connect("coupling_schur.coupling_group.coupling.aero.%s" % k, "coupling.prop.%s" % v)
+                self.connect("coupling_schur.coupling_group.coupling.aero.%s" % k, "coupling_schur.coupling_group.coupling.prop.%s" % v)
         for k, v in prop2aero_conn.items():
             if self.options["balance_group"] is None:
                 self.connect("coupling.prop.%s" % k, "coupling.aero.%s" % v)
             else:
-                self.connect("coupling_schur.coupling_group.coupling.prop.%s" % k, "coupling.aero.%s" % v)
+                self.connect("coupling_schur.coupling_group.coupling.prop.%s" % k, "coupling_schur.coupling_group.coupling.aero.%s" % v)
 
 
 class CouplingAeropropulsive(CouplingGroup):
