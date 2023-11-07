@@ -117,7 +117,7 @@ class AeroFunction(om.ExplicitComponent):
 
         self.add_input('pressure', shape_by_conn=True, distributed=True, tags=['mphys_coupling'])
         self.add_input('qdyn', 0., tags=['mphys_input'])
-        self.add_output('C_L', tags=['mphys_result'])
+        self.add_output('C_L')
 
     def compute(self,inputs,outputs):
         self.solver.qdyn = inputs['qdyn']
@@ -193,6 +193,9 @@ class AeroBuilder(Builder):
         return AeroSolverGroup(solver=self.solver)
 
     def get_post_coupling_subsystem(self, scenario_name=None):
+        return AeroFunctionGroup(solver=self.solver)
+    
+    def get_post_coupling_subsystem_schur(self, scenario_name=None):
         return AeroFunctionGroup(solver=self.solver)
 
     def get_number_of_nodes(self):

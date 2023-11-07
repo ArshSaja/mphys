@@ -108,6 +108,8 @@ class ScenarioAeroStructural(Scenario):
                 ),
             )
 
+            self._mphys_add_post_coupling_subsystems()
+
 
     def _mphys_check_coupling_order_inputs(self, given_options):
         valid_options = ["aero", "struct", "ldxfer"]

@@ -108,9 +108,9 @@ class StructFunction(om.ExplicitComponent):
         self.add_input('dv_struct', shape_by_conn=True, tags = ['mphys_input'])
         self.add_input('x_struct0', shape_by_conn=True, distributed=True, tags = ['mphys_coordinates'])
         self.add_input('u_struct', shape_by_conn=True, distributed=True, tags = ['mphys_coupling'])
-        self.add_input('modulus', 0., tags=['mphys_input'])
-        self.add_input('yield_stress', 0., tags=['mphys_input'])
-        self.add_output('func_struct', 0., tags = ['mphys_result'])
+        self.add_input('modulus', 0.)
+        self.add_input('yield_stress', 0.)
+        self.add_output('func_struct', 0.)
 
     def compute(self,inputs,outputs):
         self.solver.dv_struct = inputs['dv_struct']
@@ -166,7 +166,7 @@ class StructMass(om.ExplicitComponent):
         self.add_input('dv_struct', shape_by_conn=True, tags = ['mphys_input'])
         self.add_input('x_struct0', shape_by_conn=True, distributed=True, tags = ['mphys_coordinates'])
         self.add_input('density', 0., tags=['mphys_input'])
-        self.add_output('mass', tags=['mphys_result'])
+        self.add_output('mass')
 
     def compute(self,inputs,outputs):
         self.solver.dv_struct = inputs['dv_struct']
@@ -247,6 +247,9 @@ class StructBuilder(Builder):
         return StructSolverGroup(solver=self.solver)
 
     def get_post_coupling_subsystem(self, scenario_name=None):
+        return StructFunctionGroup(solver=self.solver)
+
+    def get_post_coupling_subsystem_schur(self, scenario_name=None):
         return StructFunctionGroup(solver=self.solver)
 
     def get_number_of_nodes(self):

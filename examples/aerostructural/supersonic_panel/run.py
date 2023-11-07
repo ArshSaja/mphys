@@ -88,11 +88,12 @@ class Model(Multipoint):
         )
         if not parallel:
             for var in ["modulus", "yield_stress", "density", "mach", "qdyn", "dv_struct", "x_struct", "x_aero"]:
-                self.connect(var, "aerostructural." + var)
+                self.connect(var, ["aerostructural." + var])
         else:
+            for var in ["modulus", "density", "mach", "qdyn", "dv_struct"]:
+                self.connect(var, ["aerostructural.coupling_schur.coupling_group."+var])
             for var in ["modulus", "yield_stress", "density", "mach", "qdyn", "dv_struct"]:
-                self.connect(var, "aerostructural." + var)
-
+                self.connect(var, ["aerostructural.struct_post." + var,"aerostructural.struct_post." + var])
 
 class TrimBalance(om.ImplicitComponent):
     def setup(self):
@@ -116,12 +117,12 @@ if __name__ == "__main__":
     om.n2(prob, show_browser=False, outfile="n2.html")
 
     prob.run_model()
-    print("mass =        " + str(prob["aerostructural.mass"]))
-    print("func_struct = " + str(prob["aerostructural.func_struct"]))
-    print("C_L =         " + str(prob["aerostructural.C_L"]))
+    print("mass =        " + str(prob["aerostructural.struct_post.mass"]))
+    print("func_struct = " + str(prob["aerostructural.struct_post.func_struct"]))
+    print("C_L =         " + str(prob["aerostructural.aero_post.aero_function.C_L"]))
 
     prob.check_totals(
-        of=["aerostructural.mass", "aerostructural.func_struct", "aerostructural.C_L"],
+        of=["aerostructural.struct_post.mass"],
         wrt=["modulus", "yield_stress", "density", "mach", "qdyn", "aoa", "dv_struct", "geometry_morph_param"],
         step_calc="rel_avg",
         compact_print=True,
