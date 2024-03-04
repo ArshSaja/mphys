@@ -1,6 +1,7 @@
 import numpy as np
 from mpi4py import MPI
 import openmdao.api as om
+import os
 
 from mphys import Multipoint
 from mphys.scenario_aerostructural import ScenarioAeroStructural
@@ -26,7 +27,15 @@ parallel = True
 
 # Mphys
 class Model(Multipoint):
+    def initialize(self):
+        self.options.declare('scenario_name', default='aerostructural')
+
     def setup(self):
+<<<<<<< HEAD
+=======
+        self.scenario_name = self.options['scenario_name']
+
+>>>>>>> main
         # ivc
         self.add_subsystem("ivc", om.IndepVarComp(), promotes=["*"])
         self.ivc.add_output("modulus", val=70e9)
@@ -70,41 +79,34 @@ class Model(Multipoint):
 
         self.connect('struct_mesh.x_struct0', 'x_struct_in')
         self.connect('aero_mesh.x_aero0', 'x_aero_in')
- 
+
+        # create the run directory
+        if self.comm.rank==0:
+            if not os.path.isdir(self.scenario_name):
+                os.mkdir(self.scenario_name)
+        self.comm.Barrier()
+
         # aerostructural analysis
         nonlinear_solver = om.NonlinearBlockGS(maxiter=100, iprint=2, use_aitken=True, aitken_initial_factor=0.5)
         linear_solver = om.LinearBlockGS(maxiter=40, iprint=2, use_aitken=True, aitken_initial_factor=0.5)
-        self.mphys_add_scenario(
-            "aerostructural",
-            ScenarioAeroStructural(
-                aero_builder=aero_builder,
-                struct_builder=struct_builder,
-                ldxfer_builder=xfer_builder,
-                balance_group=TrimBalance(),
-                # in_MultipointParallel=parallel,
-            ),
-            # coupling_nonlinear_solver=nonlinear_solver,
-            # coupling_linear_solver=linear_solver,
-        )
-        for var in ['modulus', 'density', 'mach', 'qdyn', 'dv_struct', 'x_struct0', 'x_aero0']:
-            self.connect(var, 'aerostructural.'+var)
-        self.connect("yield_stress", 'aerostructural.struct_post.yield_stress')
+        self.mphys_add_scenario(self.scenario_name,
+                                ScenarioAeroStructural(
+                                    aero_builder=aero_builder,
+                                    struct_builder=struct_builder,
+                                    ldxfer_builder=xfer_builder,
+                                    run_directory=self.scenario_name),
+                                coupling_nonlinear_solver=nonlinear_solver,
+                                coupling_linear_solver=linear_solver)
 
-        # self.connect("aoa", ["cruise.coupling.aero.aoa", "cruise.aero_post.aoa"])
-        self.connect("aerostructural.coupling.coupling_schur.coupling_group.aero_post.C_L", "aerostructural.C_L")
-        
+        for var in ['modulus', 'yield_stress', 'density', 'mach', 'qdyn', 'aoa', 'dv_struct', 'x_struct0', 'x_aero0']:
+            self.connect(var, self.scenario_name+'.'+var)
 
-class TrimBalance(om.ImplicitComponent):
-    def setup(self):
-        self.add_input("C_L", tags=["mphys_coupling"])
-        self.add_input("target_CL", tags=["mphys_coupling"])
-        self.add_output("aoa", units="deg", tags=["mphys_coupling"])
+        # add design variables, to simplify remote setup
+        self.add_design_var('geometry_morph_param', lower=0.1, upper=10.0)
+        self.add_design_var('dv_struct', lower=1.e-4, upper=1.e-2, ref=1.e-3)
 
-    def setup_partials(self):
-        self.declare_partials(of="*", wrt="*", method="cs")
-
-    def apply_nonlinear(self, inputs, outputs, residuals):
-        residuals["aoa"] = inputs["C_L"] - 0.5
+def get_model(scenario_name):
+    return Model(scenario_name=scenario_name[0])
 
 # run model and check derivatives
 if __name__ == "__main__":
@@ -114,16 +116,27 @@ if __name__ == "__main__":
 
     om.n2(prob, show_browser=False, outfile="n2.html")
 
+    om.n2(prob, show_browser=False, outfile='n2.html')
+
     prob.run_model()
-    print("mass =        " + str(prob["aerostructural.struct_post.mass"]))
-    print("func_struct = " + str(prob["aerostructural.struct_post.func_struct"]))
-    print("C_L =         " + str(prob["aerostructural.aero_post.C_L"]))
+    print('mass =        ' + str(prob['aerostructural.mass']))
+    print('func_struct = ' + str(prob['aerostructural.func_struct']))
+    print('C_L =         ' + str(prob['aerostructural.C_L']))
 
     prob.check_totals(
-        of=["aerostructural.aero_post.C_L"],
-        wrt=["modulus", "yield_stress", "density", "mach", "qdyn", "aoa", "dv_struct", "geometry_morph_param"],
-        step_calc="rel_avg",
-        compact_print=True,
+        of=['aerostructural.mass',
+            'aerostructural.func_struct',
+            'aerostructural.C_L'],
+        wrt=['modulus',
+             'yield_stress',
+             'density',
+             'mach',
+             'qdyn',
+             'aoa',
+             'dv_struct',
+             'geometry_morph_param'],
+        step_calc='rel_avg',
+        compact_print=True
     )
 
     # prob.check_partials(compact_print=True, step_calc="rel_avg")
