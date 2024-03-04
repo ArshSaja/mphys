@@ -1,7 +1,7 @@
 import openmdao.api as om
 
 
-def set_coupling_algorithms_in_scenarios(multipoint_group, balance_added=False):
+def set_coupling_algorithms_in_scenarios(multipoint_group, balance_added=False, case="aero"):
     """
     Set the stored linear and nonlinear solver into the coupling group if the
     scenario exists on this proc.
@@ -11,13 +11,20 @@ def set_coupling_algorithms_in_scenarios(multipoint_group, balance_added=False):
     for scenario, solvers in multipoint_group.mphys_coupling_solvers:
         if solvers[0] is not None and scenario.comm:
             if balance_added:
-                scenario.coupling_schur.coupling_group.coupling.nonlinear_solver = solvers[0]
+                if case=="aerostruct":
+                    scenario.coupling.coupling_schur.coupling_group.nonlinear_solver = solvers[0]
+                else:
+                    scenario.coupling_schur.coupling_group.coupling.nonlinear_solver = solvers[0]
             else:
                 scenario.nonlinear_solver = solvers[0]
 
         if solvers[1] is not None and scenario.comm:
             if balance_added:
-                scenario.coupling_schur.coupling_group.coupling.linear_solver = solvers[1]
+                # scenario.coupling_schur.coupling_group.coupling.linear_solver = solvers[1]
+                if case=="aerostruct":
+                    scenario.coupling.coupling_schur.coupling_group.linear_solver = solvers[1]
+                else:
+                    scenario.coupling_schur.coupling_group.coupling.linear_solver = solvers[1]
             else:
                 scenario.linear_solver = solvers[1]
             # scenario.coupling.linear_solver = solvers[1]
@@ -53,6 +60,7 @@ class Multipoint(om.Group):
         self.balance_added = False
         if scenario.options["balance_group"] is not None:
             self.balance_added = True
+            self.case=scenario.case
 
         return self.add_subsystem(name, scenario)
 
@@ -83,7 +91,7 @@ class Multipoint(om.Group):
        
 
     def configure(self):
-        return set_coupling_algorithms_in_scenarios(self, balance_added=self.balance_added)
+        return set_coupling_algorithms_in_scenarios(self, balance_added=self.balance_added, case=self.case)
 
 
 class MultipointParallel(om.ParallelGroup):

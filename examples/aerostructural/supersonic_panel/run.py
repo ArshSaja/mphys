@@ -81,19 +81,18 @@ class Model(Multipoint):
                 struct_builder=struct_builder,
                 ldxfer_builder=xfer_builder,
                 balance_group=TrimBalance(),
-                in_MultipointParallel=parallel,
+                # in_MultipointParallel=parallel,
             ),
-            coupling_nonlinear_solver=nonlinear_solver,
-            coupling_linear_solver=linear_solver,
+            # coupling_nonlinear_solver=nonlinear_solver,
+            # coupling_linear_solver=linear_solver,
         )
-        if not parallel:
-            for var in ["modulus", "yield_stress", "density", "mach", "qdyn", "dv_struct", "x_struct", "x_aero"]:
-                self.connect(var, ["aerostructural." + var])
-        else:
-            for var in ["modulus", "density", "mach", "qdyn", "dv_struct"]:
-                self.connect(var, ["aerostructural.coupling_schur.coupling_group."+var])
-            for var in ["modulus", "yield_stress", "density", "mach", "qdyn", "dv_struct"]:
-                self.connect(var, ["aerostructural.struct_post." + var,"aerostructural.struct_post." + var])
+        for var in ['modulus', 'density', 'mach', 'qdyn', 'dv_struct', 'x_struct0', 'x_aero0']:
+            self.connect(var, 'aerostructural.'+var)
+        self.connect("yield_stress", 'aerostructural.struct_post.yield_stress')
+
+        # self.connect("aoa", ["cruise.coupling.aero.aoa", "cruise.aero_post.aoa"])
+        self.connect("aerostructural.coupling.coupling_schur.coupling_group.aero_post.C_L", "aerostructural.C_L")
+        
 
 class TrimBalance(om.ImplicitComponent):
     def setup(self):
@@ -105,8 +104,7 @@ class TrimBalance(om.ImplicitComponent):
         self.declare_partials(of="*", wrt="*", method="cs")
 
     def apply_nonlinear(self, inputs, outputs, residuals):
-        residuals["aoa"] = inputs["C_L"] - inputs["target_CL"]
-
+        residuals["aoa"] = inputs["C_L"] - 0.5
 
 # run model and check derivatives
 if __name__ == "__main__":
@@ -119,13 +117,13 @@ if __name__ == "__main__":
     prob.run_model()
     print("mass =        " + str(prob["aerostructural.struct_post.mass"]))
     print("func_struct = " + str(prob["aerostructural.struct_post.func_struct"]))
-    print("C_L =         " + str(prob["aerostructural.aero_post.aero_function.C_L"]))
+    print("C_L =         " + str(prob["aerostructural.aero_post.C_L"]))
 
     prob.check_totals(
-        of=["aerostructural.struct_post.mass"],
+        of=["aerostructural.aero_post.C_L"],
         wrt=["modulus", "yield_stress", "density", "mach", "qdyn", "aoa", "dv_struct", "geometry_morph_param"],
         step_calc="rel_avg",
         compact_print=True,
     )
 
-    prob.check_partials(compact_print=True, step_calc="rel_avg")
+    # prob.check_partials(compact_print=True, step_calc="rel_avg")

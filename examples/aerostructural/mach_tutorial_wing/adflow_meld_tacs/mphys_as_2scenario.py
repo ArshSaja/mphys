@@ -25,7 +25,7 @@ if args.xfer == "meld":
 else:
     forcesAsTractions = True
 
-
+check_derivs = False
 class Top(Multipoint):
     def setup(self):
 
@@ -170,6 +170,9 @@ class Top(Multipoint):
         self.connect("aoa1", ["maneuver.coupling.aero.aoa", "maneuver.aero_post.aoa"])
 
 
+        self.add_design_var("aoa0",lower=-5.0, upper=10.0, ref=1.0, units='rad')
+
+
 ################################################################################
 # OpenMDAO setup
 ################################################################################
@@ -178,7 +181,13 @@ prob.model = Top()
 model = prob.model
 prob.setup()
 om.n2(prob, show_browser=False, outfile="mphys_as_adflow_tacs_%s_2pt.html" % args.xfer)
-prob.run_model()
+
+if check_derivs:
+    prob.run_model()
+    prob.check_totals(of=['cruise.mass','cruise.C_L','maneuver.ks_vmfailure'],
+                      wrt=['aoa','ribs'])
+else:
+    prob.run_driver()
 
 prob.model.list_outputs()
 

@@ -62,6 +62,7 @@ class ScenarioAeropropulsive(Scenario):
 
             aero_post = aero_builder.get_post_coupling_subsystem_schur(self.name)
             prop_post = prop_builder.get_post_coupling_subsystem_schur(self.name)
+            balance_group_schur = balance_group.get_coupling_group_subsystem(self.name)
 
             self.mphys_add_subsystem(
                 "coupling_schur",
@@ -71,7 +72,7 @@ class ScenarioAeropropulsive(Scenario):
                     coupling=coupling,
                     aero_post=aero_post,
                     prop_post=prop_post,
-                    balance_group=balance_group,
+                    balance_group=balance_group_schur,
                 ),
             )
             self._mphys_add_post_coupling_subsystem_from_builder("aero", aero_builder, self.name)
@@ -141,8 +142,8 @@ class CouplingAeropropulsive(CouplingGroup):
             balance = balance_builder.get_coupling_group_subsystem(scenario_name)
             self.mphys_add_subsystem("balance", balance)
 
-        self.nonlinear_solver = om.NonlinearBlockGS(maxiter=25, iprint=2, atol=1e-8, rtol=1e-8)
-        self.linear_solver = om.LinearBlockGS(maxiter=25, iprint=2, atol=1e-8, rtol=1e-8)
+        # self.nonlinear_solver = om.NonlinearBlockGS(maxiter=25, iprint=2, atol=1e-8, rtol=1e-8)
+        # self.linear_solver = om.LinearBlockGS(maxiter=25, iprint=2, atol=1e-8, rtol=1e-8)
 
 
 class CouplingAeroPropSchur(CouplingGroup):

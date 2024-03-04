@@ -59,11 +59,14 @@ class ScenarioAeroStructural(Scenario):
             recordable=False,
             desc="The order of the post coupling subsystems",
         )
-
+        self.case="aerostruct"
     def _mphys_scenario_setup(self):
         if self.options["in_MultipointParallel"]:
             self._mphys_initialize_builders()
             self._mphys_add_mesh_and_geometry_subsystems()
+        # self._mphys_add_pre_coupling_subsystems()
+        # self._mphys_add_coupling_group()
+        # self._mphys_add_post_coupling_subsystems()
         if self.options["balance_group"] is None:
             self._mphys_add_pre_coupling_subsystems()
             self._mphys_add_coupling_group()
@@ -89,8 +92,8 @@ class ScenarioAeroStructural(Scenario):
             coupling = self._mphys_add_coupling_group()
             discipline=self.options["post_coupling_order"]
             ldxfer_post = self.options[f"{discipline[0]}_builder"].get_post_coupling_subsystem(self.name)
-            aero_post = self.options[f"{discipline[1]}_builder"].get_post_coupling_subsystem(self.name)
-            struct_post = self.options[f"{discipline[2]}_builder"].get_post_coupling_subsystem(self.name)
+            aero_post = self.options[f"{discipline[1]}_builder"].get_post_coupling_subsystem_schur(self.name)
+            # struct_post = self.options[f"{discipline[2]}_builder"].get_post_coupling_subsystem(self.name)
             
 
             self.mphys_add_subsystem(
@@ -101,14 +104,20 @@ class ScenarioAeroStructural(Scenario):
                     ldxfer_pre=ldxfer_pre,
                     coupling=coupling,
                     aero_post=aero_post,
-                    struct_post=struct_post,
+                    # struct_post=struct_post,
                     ldxfer_post=ldxfer_post,
                     balance_group=self.options["balance_group"],
                     coupling_group_type=self.options["coupling_group_type"],
                 ),
             )
 
-            self._mphys_add_post_coupling_subsystems()
+            aero_post = self.options[f"{discipline[1]}_builder"].get_post_coupling_subsystem(self.name)
+            struct_post = self.options[f"{discipline[2]}_builder"].get_post_coupling_subsystem(self.name)
+            if aero_post is not None:
+                self.mphys_add_subsystem("aero_post", aero_post)
+            if struct_post is not None:
+                self.mphys_add_subsystem("struct_post", struct_post)
+            # self._mphys_add_post_coupling_subsystems()
 
 
     def _mphys_check_coupling_order_inputs(self, given_options):
@@ -153,6 +162,7 @@ class ScenarioAeroStructural(Scenario):
                     aero_builder=self.options["aero_builder"],
                     struct_builder=self.options["struct_builder"],
                     ldxfer_builder=self.options["ldxfer_builder"],
+                    balance_group=self.options["balance_group"],
                     scenario_name=self.name,
                 )
                 # self.mphys_add_subsystem("coupling", coupling_group)
@@ -207,7 +217,7 @@ class CouplingAeroStructSchur(CouplingGroup):
         self.options.declare("ldxfer_pre", recordable=False, default=None)
         self.options.declare("coupling", recordable=False, default=None)
         self.options.declare("aero_post", recordable=False, default=None)
-        self.options.declare("struct_post", recordable=False, default=None)
+        # self.options.declare("struct_post", recordable=False, default=None)
         self.options.declare("ldxfer_post", recordable=False, default=None)
         self.options.declare("balance_group", recordable=False, default=None)
         self.options.declare("coupling_group_type", default=None)
@@ -218,7 +228,7 @@ class CouplingAeroStructSchur(CouplingGroup):
         ldxfer_pre = self.options["ldxfer_pre"]
         coupling = self.options["coupling"]
         aero_post = self.options["aero_post"]
-        struct_post = self.options["struct_post"]
+        # struct_post = self.options["struct_post"]
         ldxfer_post = self.options["ldxfer_post"]
         balance_group = self.options["balance_group"]
 
@@ -228,7 +238,7 @@ class CouplingAeroStructSchur(CouplingGroup):
             ldxfer_pre=ldxfer_pre,
             coupling=coupling,
             aero_post=aero_post,
-            struct_post=struct_post,
+            # struct_post=struct_post,
             ldxfer_post=ldxfer_post,
             coupling_group_type=self.options["coupling_group_type"],
         )
@@ -264,7 +274,7 @@ class CouplingAeroStructTopSchur(CouplingGroup):
         self.options.declare("ldxfer_pre", recordable=False, default=None)
         self.options.declare("coupling", recordable=False, default=None)
         self.options.declare("aero_post", recordable=False, default=None)
-        self.options.declare("struct_post", recordable=False, default=None)
+        # self.options.declare("struct_post", recordable=False, default=None)
         self.options.declare("ldxfer_post", recordable=False, default=None)
         self.options.declare("coupling_group_type", default=None)
 
@@ -274,7 +284,7 @@ class CouplingAeroStructTopSchur(CouplingGroup):
         ldxfer_pre = self.options["ldxfer_pre"]
         coupling = self.options["coupling"]
         aero_post = self.options["aero_post"]
-        struct_post = self.options["struct_post"]
+        # struct_post = self.options["struct_post"]
         ldxfer_post = self.options["ldxfer_post"]
 
         if aero_pre is not None:
@@ -293,8 +303,8 @@ class CouplingAeroStructTopSchur(CouplingGroup):
             self.mphys_add_subsystem("ldxfer_post", ldxfer_post)
         if aero_post is not None:
             self.mphys_add_subsystem("aero_post", aero_post)
-        if struct_post is not None:
-            self.mphys_add_subsystem("struct_post", struct_post)
+        # if struct_post is not None:
+        #     self.mphys_add_subsystem("struct_post", struct_post)
 
         self.nonlinear_solver = om.NonlinearRunOnce()
         self.linear_solver = om.LinearRunOnce()
