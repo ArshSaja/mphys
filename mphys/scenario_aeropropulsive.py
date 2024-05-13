@@ -28,7 +28,7 @@ class ScenarioAeropropulsive(Scenario):
         self.options.declare(
             "balance_group", default=None, recordable=False, desc="The optional MPhys builder for the geometry"
         )
-
+        self.case="aeroprop"
     def _mphys_scenario_setup(self):
         aero_builder = self.options["aero_builder"]
         prop_builder = self.options["prop_builder"]
@@ -171,8 +171,8 @@ class CouplingAeroPropSchur(CouplingGroup):
             aero_pre=aero_pre,
             prop_pre=prop_pre,
             coupling=coupling,
-            aero_post=aero_post,
-            prop_post=prop_post,
+            # aero_post=aero_post,
+            # prop_post=prop_post,
         )
 
         self.mphys_add_subsystem("coupling_group", coupling_group)
