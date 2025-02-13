@@ -13,6 +13,7 @@
 sfe_restart.cfg
 flow.*
 *sql
+reports
 
 *cgns
 *ugrid
@@ -61,3 +62,5 @@ tests/constant
 tests/FFD
 tests/system
 
+# OM output
+reports
