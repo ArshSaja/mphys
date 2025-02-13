@@ -31,11 +31,15 @@ class ScenarioAerodynamic(Scenario):
         self.options.declare(
             "balance_group", default=None, recordable=False, desc="The optional MPhys builder for the geometry"
         )
-
+        self.options.declare(
+            "balance_debug", default=None, recordable=False, desc="The optional MPhys builder for the geometry"
+        )
+        self.case="aero"
     def _mphys_scenario_setup(self):
         aero_builder = self.options["aero_builder"]
         geometry_builder = self.options["geometry_builder"]
         balance_group = self.options["balance_group"]
+        balance_debug = self.options["balance_debug"]
 
         if balance_group is None:
             if self.options["in_MultipointParallel"]:
@@ -81,6 +85,7 @@ class ScenarioAerodynamic(Scenario):
                     coupling=coupling,
                     aero_post=aero_post,
                     balance_group=balance_group,
+                    balance_debug=balance_debug,
                 ),
             )
             self._mphys_add_post_coupling_subsystem_from_builder("aero", aero_builder, self.name)
@@ -96,14 +101,17 @@ class CouplingAeroSchur(CouplingGroup):
         self.options.declare("coupling", recordable=False, default=None)
         self.options.declare("aero_post", recordable=False, default=None)
         self.options.declare("balance_group", recordable=False, default=None)
+        self.options.declare("balance_debug", recordable=False, default=None)
+
 
     def setup(self):
         aero_pre = self.options["aero_pre"]
         coupling = self.options["coupling"]
         aero_post = self.options["aero_post"]
         balance_group = self.options["balance_group"]
+        balance_debug = self.options["balance_debug"]
 
-        coupling_group = CouplingAeroTopSchur(aero_pre=aero_pre, coupling=coupling, aero_post=aero_post)
+        coupling_group = CouplingAeroTopSchur(aero_pre=aero_pre, coupling=coupling, aero_post=aero_post, balance_debug=balance_debug)
 
         self.mphys_add_subsystem("coupling_group", coupling_group)
         self.mphys_add_subsystem("balance_group", balance_group)
@@ -134,15 +142,18 @@ class CouplingAeroTopSchur(CouplingGroup):
         self.options.declare("aero_pre", recordable=False, default=None)
         self.options.declare("coupling", recordable=False, default=None)
         self.options.declare("aero_post", recordable=False, default=None)
+        self.options.declare("balance_debug", recordable=False, default=None)
 
     def setup(self):
         aero_pre = self.options["aero_pre"]
         coupling = self.options["coupling"]
         aero_post = self.options["aero_post"]
+        balance_debug = self.options["balance_debug"]
 
         self.mphys_add_subsystem("aero_pre", aero_pre)
         self.mphys_add_subsystem("coupling", coupling)
         self.mphys_add_subsystem("aero_post", aero_post)
+        self.mphys_add_subsystem("balance_debug", balance_debug)
 
         self.nonlinear_solver = om.NonlinearRunOnce()
         self.linear_solver = om.LinearRunOnce()
